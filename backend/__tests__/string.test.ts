@@ -1,3 +1,4 @@
+import { describe, test, expect } from "@jest/globals";
 import { toUpperCase, toLowerCase } from "../src/utils/string";
 
 describe("String Utilities", () => {
