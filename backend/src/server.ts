@@ -1,8 +1,9 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
 import path from "path";
+import errorHandler from "./middleware/errorHandler";
 
 const app = express();
 const server = http.createServer(app);
@@ -16,11 +17,18 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Middleware to handle errors
+app.use(errorHandler);
+
 io.on("connection", (socket: Socket) => {
   console.log("A user connected:", socket.id);
 
   // Listen for incoming messages
   socket.on("chatMessage", (msg: string) => {
+    if (typeof msg !== "string" || msg.trim() === "") {
+      socket.emit("errorMessage", "Invalid message format");
+      return;
+    }
     console.log(`Message from ${socket.id}: ${msg}`);
     io.emit("chatMessage", msg); // Broadcast message to all clients
   });
